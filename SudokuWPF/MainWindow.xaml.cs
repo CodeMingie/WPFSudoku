@@ -166,8 +166,8 @@ namespace SudokuWPF
             if (int.TryParse(tb48.Text, out result))
                 s.SetNum(4, 8, result);
 
-            if (int.TryParse(tb00.Text, out result))
-                s.SetNum(0, 0, result);
+            if (int.TryParse(tb50.Text, out result))
+                s.SetNum(5, 0, result);
 
             if (int.TryParse(tb51.Text, out result))
                 s.SetNum(5, 1, result);

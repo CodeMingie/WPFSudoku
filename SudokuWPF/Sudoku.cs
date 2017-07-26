@@ -99,32 +99,138 @@ namespace SudokuWPF
             return true;
         }
 
+        /// <summary>
+        /// Start solving the puzzle.
+        /// Reuse strategies once a number is found.
+        /// </summary>
         public void Solve()
         {
-            bool hasNewNumSolved = true;
+            Beginning:
 
-            while (hasNewNumSolved)
-            {
-                hasNewNumSolved = false;
+            bool solvedOne = false;
 
-                for (int x = 1; x < 10; x++)
-                {
-                    List<Tuple<int, int>> l = SolveNum(x);
+            solvedOne = SolveTwoOutThree();
 
-                    foreach (Tuple<int, int> t in l)
-                    {
-                        this.numberMap[t.Item1, t.Item2] = x;
-                    }
+            if (solvedOne)
+                goto Beginning;
 
-                    if (l.Count > 0)
-                        hasNewNumSolved = true;
-                }
+            //solvedOne = SolveSinglePoss();
 
-                Console.Out.WriteLine(this.PrintNumMap());
-            }
+            //if (solvedOne)
+                //goto Beginning;
+
         }
 
-        public List<Tuple<int, int>> SolveNum(int num)
+        /// <summary>
+        /// Solves using single possiblity strategy
+        /// Reduce the possibility using numbers from row / column / block
+        /// If only one number is left, then we have solved the square
+        /// </summary>
+        /// <returns>True if a square is solved</returns>
+        public bool SolveSinglePoss()
+        {
+            bool solvedOne = false;
+
+            for (int x = 0; x < 9; x++)
+            {
+                for (int y = 0; y < 9; y++)
+                {
+                    List<int> existing = ExistingPoss(x, y);
+                    if (existing.Count == 8)
+                    {
+                        int leftOver = -1;
+
+                        if (!existing.Contains(1))
+                            leftOver = 1;
+                        if (!existing.Contains(2))
+                            leftOver = 2;
+                        if (!existing.Contains(3))
+                            leftOver = 3;
+                        if (!existing.Contains(4))
+                            leftOver = 4;
+                        if (!existing.Contains(5))
+                            leftOver = 5;
+                        if (!existing.Contains(6))
+                            leftOver = 6;
+                        if (!existing.Contains(7))
+                            leftOver = 7;
+                        if (!existing.Contains(8))
+                            leftOver = 8;
+                        if (!existing.Contains(9))
+                            leftOver = 9;
+
+                        if (leftOver != -1)
+                        {
+                            this.numberMap[x, y] = leftOver;
+                            solvedOne = true;
+                        }
+                    }
+                }
+            }
+
+            return solvedOne;
+        }
+
+        /// <summary>
+        /// Returns filled in numbers for row / column / block
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        private List<int> ExistingPoss(int x, int y)
+        {
+            List<int> filled = new List<int>();
+
+            for (int i = 0; i < 9; x++)
+            {
+                if (this.numberMap[x, i].HasValue && !filled.Contains(this.numberMap[x, i].Value))
+                    filled.Add(this.numberMap[x, i].Value);
+
+                if (this.numberMap[i, y].HasValue && !filled.Contains(this.numberMap[i, y].Value))
+                    filled.Add(this.numberMap[i, y].Value);
+            }
+
+            for (int a = x / 3 * 3; a < x / 3 * 3 + 3; a++)
+            {
+                for (int b = y / 3 * 3; b < y / 3 * 3 + 3; b++)
+                {
+                    if (this.numberMap[a, b].HasValue && !filled.Contains(this.numberMap[a, b].Value))
+                        filled.Add(this.numberMap[a, b].Value);
+                }
+            }
+
+            return filled;
+        }
+
+        //
+        /// <summary>
+        /// Applies the two out of three rule
+        /// Fins the 
+        /// </summary>
+        /// <returns>true if a square is solved</returns>
+        public bool SolveTwoOutThree()
+        {
+            bool solvedOne = false;
+
+            for (int x = 1; x < 10; x++)
+            {
+                List<Tuple<int, int>> l = SolveTwoOutThree(x);
+
+                foreach (Tuple<int, int> t in l)
+                {
+                    this.numberMap[t.Item1, t.Item2] = x;
+                }
+
+                if (l.Count > 0)
+                    solvedOne = true;
+
+                Console.Out.WriteLine(x);
+                Console.Out.WriteLine(this.PrintNumMap());
+            }
+
+            return solvedOne;
+        }
+        public List<Tuple<int, int>> SolveTwoOutThree(int num)
         {
             //Initialize possibility table
             List<Tuple<int, int>> solvedNums = new List<Tuple<int, int>>();
